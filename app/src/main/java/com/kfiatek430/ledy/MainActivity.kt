@@ -32,9 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
+import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
-import com.kfiatek430.ledy.ui.theme.SterowanieLedamiTheme
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import com.kfiatek430.ledy.ui.theme.SterowanieLedamiTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,59 +44,53 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SterowanieLedamiTheme {
-                val controller = rememberColorPickerController()
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column(
-                        modifier = Modifier.padding(top = innerPadding.calculateTopPadding() + 16.dp),
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "Sterowanie Ledami",
-                                fontSize = 25.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            PowerButton()
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 20.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            HsvColorPicker(
-                            modifier = Modifier
-                                .width(300.dp)
-                                .height(300.dp),
-                            controller = controller,
-                            onColorChanged = { colorEnvelope: ColorEnvelope ->
-                                println(colorEnvelope.color)
-                            }
-                            )
-                        }
-                    }
-                }
+                MainApp()
             }
         }
     }
 
     @Composable
-    fun PowerButton() {
+    fun MainApp() {
         var isPowered by remember { mutableStateOf(false) }
+        val controller = rememberColorPickerController()
 
         val handlePowerButtonClick: () -> Unit = {
             isPowered = !isPowered
+            controller.enabled = isPowered
         }
 
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Column(
+                modifier = Modifier.padding(top = innerPadding.calculateTopPadding() + 16.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Sterowanie Ledami",
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    PowerButton(isPowered, handlePowerButtonClick)
+                }
+
+                if(isPowered) {
+                    Controls(controller)
+                }
+
+            }
+        }
+    }
+
+    @Composable
+    fun PowerButton(isPowered: Boolean, onclick: () -> Unit) {
         val buttonColor = if (isPowered) Color.Red else Color.Blue
 
         Button(
-            onClick = handlePowerButtonClick,
+            onClick = onclick,
             modifier = Modifier.size(70.dp),
             shape = CircleShape,
             colors = ButtonDefaults.buttonColors(
@@ -105,6 +100,26 @@ class MainActivity : ComponentActivity() {
             Image(
                 painter = painterResource(id = R.drawable.baseline_power_settings_new_36),
                 contentDescription = "Power button",
+            )
+        }
+    }
+
+    @Composable
+    fun Controls(controller: ColorPickerController) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            HsvColorPicker(
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(300.dp),
+                controller = controller,
+                onColorChanged = { colorEnvelope: ColorEnvelope ->
+                    println(colorEnvelope.color)
+                }
             )
         }
     }
