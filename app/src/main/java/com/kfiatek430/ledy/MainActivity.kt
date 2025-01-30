@@ -5,7 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,6 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -34,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
@@ -60,15 +65,19 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun MainApp() {
         var isPowered by remember { mutableStateOf(false) }
-        var color = Color.Red
-        val controller = rememberColorPickerController()
+        var color = Color.White
+        var brightness by remember { mutableStateOf(0f) }
 
-        val handlePowerSwitchChange: (Boolean) -> Unit = {
+        val powerSwitchChange: (Boolean) -> Unit = {
             isPowered = !isPowered
         }
 
         val colorChange: (Color) -> Unit = {
             color = it
+        }
+
+        val brightnessChange: (Float) -> Unit = {
+            brightness = it;
         }
 
         Scaffold(
@@ -90,12 +99,13 @@ class MainActivity : ComponentActivity() {
                         fontWeight = FontWeight.Bold
                     )
 
-                    PowerSwitch(isPowered, handlePowerSwitchChange)
+                    PowerSwitch(isPowered, powerSwitchChange)
                 }
 
                 if(isPowered) {
-                    Controls(controller, colorChange)
+                    Controls(colorChange)
                     GridOfButtons(colorChange)
+                    BrightnessSlider(brightness, brightnessChange)
                 }
             }
         }
@@ -116,7 +126,9 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun Controls(controller: ColorPickerController, colorChange: (Color) -> Unit) {
+    fun Controls(colorChange: (Color) -> Unit) {
+        val controller = rememberColorPickerController()
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -153,17 +165,41 @@ class MainActivity : ComponentActivity() {
             contentPadding = PaddingValues(10.dp),
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
+            ) {
             items(colors) { color ->
-                Button(
-                    onClick = { colorChange(color) },
-                    modifier = Modifier
-                        .aspectRatio(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = color
-                    )
-                ) {}
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .shadow(8.dp, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(color)
+                    .clickable { colorChange(color) },
+                )
             }
+        }
+    }
+
+    @Composable
+    fun BrightnessSlider(value: Float, brightnessChange: (Float) -> Unit) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 30.dp, start = 10.dp, end = 10.dp)
+        ) {
+            Slider(
+                value = value,
+                onValueChange = { newValue -> brightnessChange(newValue) },
+                valueRange = 0f..100f,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp),
+                colors = SliderDefaults.colors(
+                    inactiveTrackColor = Color.LightGray,
+                    activeTrackColor = Color(0xFF171D31),
+                    thumbColor = Color.Gray
+                )
+            )
         }
     }
 }
