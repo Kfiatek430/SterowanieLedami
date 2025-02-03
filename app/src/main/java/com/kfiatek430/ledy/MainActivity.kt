@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,8 +23,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -43,13 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
-import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.kfiatek430.ledy.ui.theme.SterowanieLedamiTheme
@@ -69,7 +64,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun MainApp() {
         var isPowered by remember { mutableStateOf(false) }
-        var color = Color.White
+        var color by remember { mutableStateOf(Color.White) }
         var brightness by remember { mutableFloatStateOf(0f) }
 
         val powerSwitchChange: (Boolean) -> Unit = {
@@ -78,6 +73,7 @@ class MainActivity : ComponentActivity() {
 
         val colorChange: (Color) -> Unit = {
             color = it
+            println("New color: $color")
         }
 
         val brightnessChange: (Float) -> Unit = {
@@ -109,6 +105,7 @@ class MainActivity : ComponentActivity() {
                 if(isPowered) {
                     Controls(colorChange)
                     GridOfButtons(colorChange)
+                    ColorPreviewBox(color)
                     BrightnessSlider(brightness, brightnessChange)
                 }
             }
@@ -154,9 +151,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun GridOfButtons(colorChange: (Color) -> Unit) {
         val colors = listOf(
-            Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Cyan,
-            Color.Magenta, Color.Gray, Color.LightGray, Color.DarkGray, Color.Black,
-            Color(0xFFFFA07A), Color(0xFF7B68EE), Color(0xFF4682B4), Color(0xFF00FA9A), Color(0xFF8B4513),
+            Color(0xFF990F02), Color(0xFFD21404), Color(0xFFFC6A03), Color(0xFFEC9706), Color(0xFFFFD300),
+            Color(0xFF3BB143), Color(0xFF00A86B), Color(0xFF0492C2), Color(0xFF2832C2), Color(0xFF8F00FF),
+            Color(0xFFE4A0F7), Color(0xFFFF1694), Color(0xFFF5DEB3), Color(0xFFFEFCF7), Color(0xFF777B7E)
         )
 
         LazyVerticalGrid(
@@ -181,6 +178,18 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    @Composable
+    fun ColorPreviewBox(color: Color) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .padding(top = 30.dp, start = 50.dp, end = 50.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(color)
+        ) {}
     }
 
     @Composable
