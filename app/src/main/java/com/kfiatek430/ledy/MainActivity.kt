@@ -30,21 +30,26 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
+import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.kfiatek430.ledy.ui.theme.SterowanieLedamiTheme
@@ -63,22 +68,32 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainApp() {
-        var isPowered by remember { mutableStateOf(false) }
-        var color by remember { mutableStateOf(Color.White) }
-        var brightness by remember { mutableFloatStateOf(0f) }
+        var isPowered by rememberSaveable { mutableStateOf(false) }
+        var colorInt by rememberSaveable { mutableIntStateOf(Color.White.toArgb()) }
+        var brightness by rememberSaveable { mutableFloatStateOf(0f) }
+
+        var color by remember { mutableStateOf(Color(colorInt)) }
+        val controller = rememberColorPickerController()
 
         val powerSwitchChange: (Boolean) -> Unit = {
             isPowered = !isPowered
         }
 
-        val colorChange: (Color) -> Unit = {
-            color = it
-            println("New color: $color")
+        val colorChange: (Color) -> Unit = { newColor ->
+            colorInt = newColor.toArgb()
+            color = Color(colorInt)
+            println("New color: $colorInt")
         }
 
-        val brightnessChange: (Float) -> Unit = {
-            brightness = it;
+        val colorChangeButton: (Color) -> Unit = { newColor ->
+            colorInt = newColor.toArgb()
+            color = Color(colorInt)
+            controller.selectByColor(color, false);
+            println("Saved color: $colorInt")
         }
+
+        val brightnessChange: (Float) -> Unit = { brightness = it }
+
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -98,19 +113,19 @@ class MainActivity : ComponentActivity() {
                         fontSize = 25.sp,
                         fontWeight = FontWeight.Bold
                     )
-
                     PowerSwitch(isPowered, powerSwitchChange)
                 }
 
-                if(isPowered) {
-                    Controls(colorChange)
-                    GridOfButtons(colorChange)
+                if (isPowered) {
+                    Controls(colorChange, color, controller)
+                    GridOfButtons(colorChangeButton)
                     ColorPreviewBox(color)
                     BrightnessSlider(brightness, brightnessChange)
                 }
             }
         }
     }
+
 
     @Composable
     fun PowerSwitch(isPowered: Boolean, onChange: (Boolean) -> Unit) {
@@ -127,8 +142,15 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun Controls(colorChange: (Color) -> Unit) {
-        val controller = rememberColorPickerController()
+    fun Controls(colorChange: (Color) -> Unit, initialColor: Color, controller: ColorPickerController) {
+        var firstLoad by remember { mutableStateOf(true) }
+
+        LaunchedEffect(initialColor) {
+            if (firstLoad) {
+                controller.selectByColor(initialColor, false)
+                firstLoad = false
+            }
+        }
 
         Row(
             modifier = Modifier
@@ -147,6 +169,7 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
+
 
     @Composable
     fun GridOfButtons(colorChange: (Color) -> Unit) {
