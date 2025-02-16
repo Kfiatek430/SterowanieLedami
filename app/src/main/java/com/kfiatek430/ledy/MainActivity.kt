@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
@@ -65,185 +66,242 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
 
-    @Composable
-    fun MainApp() {
-        var isPowered by rememberSaveable { mutableStateOf(false) }
-        var colorInt by rememberSaveable { mutableIntStateOf(Color.White.toArgb()) }
-        var brightness by rememberSaveable { mutableFloatStateOf(0f) }
+@Composable
+fun MainApp() {
+    var isPowered by rememberSaveable { mutableStateOf(false) }
+    var colorInt by rememberSaveable { mutableIntStateOf(Color.White.toArgb()) }
+    var brightness by rememberSaveable { mutableFloatStateOf(0f) }
 
-        var color by remember { mutableStateOf(Color(colorInt)) }
-        val controller = rememberColorPickerController()
+    var color by remember { mutableStateOf(Color(colorInt)) }
+    val controller = rememberColorPickerController()
 
-        val powerSwitchChange: (Boolean) -> Unit = {
-            isPowered = !isPowered
-        }
-
-        val colorChange: (Color) -> Unit = { newColor ->
-            colorInt = newColor.toArgb()
-            color = Color(colorInt)
-            println("New color: $colorInt")
-        }
-
-        val colorChangeButton: (Color) -> Unit = { newColor ->
-            colorInt = newColor.toArgb()
-            color = Color(colorInt)
-            controller.selectByColor(color, false);
-            println("Saved color: $colorInt")
-        }
-
-        val brightnessChange: (Float) -> Unit = { brightness = it }
-
-
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = Color(0xFF2B324C),
-            contentColor = Color.White
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier.padding(top = innerPadding.calculateTopPadding() + 16.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Sterowanie Ledami",
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    PowerSwitch(isPowered, powerSwitchChange)
-                }
-
-                if (isPowered) {
-                    Controls(colorChange, color, controller)
-                    GridOfButtons(colorChangeButton)
-                    ColorPreviewBox(color)
-                    BrightnessSlider(brightness, brightnessChange)
-                }
-            }
-        }
+    val powerSwitchChange: (Boolean) -> Unit = {
+        isPowered = !isPowered
     }
 
-
-    @Composable
-    fun PowerSwitch(isPowered: Boolean, onChange: (Boolean) -> Unit) {
-        Switch(
-            checked = isPowered,
-            onCheckedChange = onChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                uncheckedThumbColor = Color.White,
-                checkedTrackColor = Color(0xFF32B4E6),
-                uncheckedTrackColor = Color(0xFF171D31)
-            )
-        )
+    val colorChange: (Color) -> Unit = { newColor ->
+        colorInt = newColor.toArgb()
+        color = Color(colorInt)
+        println("New color: $colorInt")
     }
 
-    @Composable
-    fun Controls(colorChange: (Color) -> Unit, initialColor: Color, controller: ColorPickerController) {
-        var firstLoad by remember { mutableStateOf(true) }
+    val colorChangeButton: (Color) -> Unit = { newColor ->
+        colorInt = newColor.toArgb()
+        color = Color(colorInt)
+        controller.selectByColor(color, false);
+        println("Saved color: $colorInt")
+    }
 
-        LaunchedEffect(initialColor) {
-            if (firstLoad) {
-                controller.selectByColor(initialColor, false)
-                firstLoad = false
-            }
-        }
+    val brightnessChange: (Float) -> Unit = { brightness = it }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp),
-            horizontalArrangement = Arrangement.Center
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color(0xFF2B324C),
+        contentColor = Color.White
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier.padding(top = innerPadding.calculateTopPadding() + 16.dp),
         ) {
-            HsvColorPicker(
-                modifier = Modifier
-                    .width(300.dp)
-                    .height(300.dp),
-                controller = controller,
-                onColorChanged = { colorEnvelope: ColorEnvelope ->
-                    colorChange(colorEnvelope.color)
-                }
-            )
-        }
-    }
-
-
-    @Composable
-    fun GridOfButtons(colorChange: (Color) -> Unit) {
-        val colors = listOf(
-            Color(0xFF990F02), Color(0xFFD21404), Color(0xFFFC6A03), Color(0xFFEC9706), Color(0xFFFFD300),
-            Color(0xFF3BB143), Color(0xFF00A86B), Color(0xFF0492C2), Color(0xFF2832C2), Color(0xFF8F00FF),
-            Color(0xFFE4A0F7), Color(0xFFFF1694), Color(0xFFF5DEB3), Color(0xFFFEFCF7), Color(0xFF777B7E)
-        )
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(5),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 30.dp, start = 10.dp, end = 10.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF171D31)),
-            contentPadding = PaddingValues(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
             ) {
-            items(colors) { color ->
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .shadow(8.dp, RoundedCornerShape(12.dp))
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color)
-                    .clickable { colorChange(color) },
+                Text(
+                    text = "Sterowanie Ledami",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold
                 )
+                PowerSwitch(isPowered, powerSwitchChange)
+            }
+
+            if (isPowered) {
+                Controls(colorChange, color, controller)
+                GridOfButtons(colorChangeButton)
+                ColorPreviewBox(color)
+                BrightnessSlider(brightness, brightnessChange)
             }
         }
     }
+}
 
-    @Composable
-    fun ColorPreviewBox(color: Color) {
+@Preview(
+    showBackground = true,
+    device = "spec:width=1080dp,height=1920dp,dpi=440"
+)
+@Composable
+fun MainAppPreview() {
+    SterowanieLedamiTheme {
+        MainApp()
+    }
+}
+
+@Composable
+fun PowerSwitch(isPowered: Boolean, onChange: (Boolean) -> Unit) {
+    Switch(
+        checked = isPowered,
+        onCheckedChange = onChange,
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = Color.White,
+            uncheckedThumbColor = Color.White,
+            checkedTrackColor = Color(0xFF32B4E6),
+            uncheckedTrackColor = Color(0xFF171D31)
+        )
+    )
+}
+
+@Preview
+@Composable
+fun PowerSwitchPreview() {
+    SterowanieLedamiTheme {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            PowerSwitch(isPowered = true, onChange = {})
+            PowerSwitch(isPowered = false, onChange = {})
+        }
+    }
+}
+
+@Composable
+fun Controls(colorChange: (Color) -> Unit, initialColor: Color, controller: ColorPickerController) {
+    var firstLoad by remember { mutableStateOf(true) }
+
+    LaunchedEffect(initialColor) {
+        if (firstLoad) {
+            controller.selectByColor(initialColor, false)
+            firstLoad = false
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        HsvColorPicker(
+            modifier = Modifier
+                .width(300.dp)
+                .height(300.dp),
+            controller = controller,
+            onColorChanged = { colorEnvelope: ColorEnvelope ->
+                colorChange(colorEnvelope.color)
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ControlsPreview() {
+    val controller = rememberColorPickerController()
+    SterowanieLedamiTheme {
+        Controls(
+            colorChange = {},
+            initialColor = Color.Blue,
+            controller = controller
+        )
+    }
+}
+
+@Composable
+fun GridOfButtons(colorChange: (Color) -> Unit) {
+    val colors = listOf(
+        Color(0xFF990F02), Color(0xFFD21404), Color(0xFFFC6A03), Color(0xFFEC9706), Color(0xFFFFD300),
+        Color(0xFF3BB143), Color(0xFF00A86B), Color(0xFF0492C2), Color(0xFF2832C2), Color(0xFF8F00FF),
+        Color(0xFFE4A0F7), Color(0xFFFF1694), Color(0xFFF5DEB3), Color(0xFFFEFCF7), Color(0xFF777B7E)
+    )
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(5),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 30.dp, start = 10.dp, end = 10.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF171D31)),
+        contentPadding = PaddingValues(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+        items(colors) { color ->
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .padding(top = 30.dp, start = 50.dp, end = 50.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .size(50.dp)
+                .shadow(8.dp, RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .background(color)
-        ) {}
-    }
-
-    @Composable
-    fun BrightnessSlider(value: Float, brightnessChange: (Float) -> Unit) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 30.dp, start = 10.dp, end = 10.dp)
-        ) {
-            Slider(
-                value = value,
-                onValueChange = { newValue -> brightnessChange(newValue) },
-                valueRange = 0f..100f,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(16.dp),
-                colors = SliderDefaults.colors(
-                    inactiveTrackColor = Color.LightGray,
-                    activeTrackColor = Color(0xFF171D31),
-                    thumbColor = Color.Gray
-                )
-            )
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Image(
-                painter = painterResource(id = R.drawable.baseline_wb_sunny_24),
-                contentDescription = "Ikona słońca",
-                modifier = Modifier.size(24.dp)
+                .clickable { colorChange(color) },
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun GridOfButtonsPreview() {
+    SterowanieLedamiTheme {
+        GridOfButtons(colorChange = {})
+    }
+}
+
+@Composable
+fun ColorPreviewBox(color: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .padding(top = 30.dp, start = 50.dp, end = 50.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(color)
+    ) {}
+}
+
+@Preview
+@Composable
+fun ColorPreviewBoxPreview() {
+    SterowanieLedamiTheme {
+        ColorPreviewBox(color = Color.Red)
+    }
+}
+
+@Composable
+fun BrightnessSlider(value: Float, brightnessChange: (Float) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 30.dp, start = 10.dp, end = 10.dp)
+    ) {
+        Slider(
+            value = value,
+            onValueChange = { newValue -> brightnessChange(newValue) },
+            valueRange = 0f..100f,
+            modifier = Modifier
+                .weight(1f)
+                .height(16.dp),
+            colors = SliderDefaults.colors(
+                inactiveTrackColor = Color.LightGray,
+                activeTrackColor = Color(0xFF171D31),
+                thumbColor = Color.Gray
+            )
+        )
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Image(
+            painter = painterResource(id = R.drawable.baseline_wb_sunny_24),
+            contentDescription = "Ikona słońca",
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun BrightnessSliderPreview() {
+    SterowanieLedamiTheme {
+        BrightnessSlider(value = 50f, brightnessChange = {})
     }
 }
